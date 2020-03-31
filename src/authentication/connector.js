@@ -97,8 +97,8 @@ function logInWithRedirect(reset) {
       auth.redirect_uri = window.location.origin;
     }
 
-    jso_configure({ cg: auth });
-    const storedToken = jso_getToken("cg");
+    jso_configure({ [auth.provider]: auth });
+    const storedToken = jso_getToken(auth.provider);
 
     if (storedToken && !reset) {
       return resolve(storedToken);
@@ -106,7 +106,7 @@ function logInWithRedirect(reset) {
 
     jso_wipe();
 
-    const iframe = createIFrame(jso_getAuthUrl("cg", auth.scope));
+    const iframe = createIFrame(jso_getAuthUrl(auth.provider, auth.scope));
     let attempt = 0;
 
     const listener = setInterval(function() {
@@ -134,13 +134,13 @@ function logInWithRedirect(reset) {
 
         clearInterval(listener);
         removeIFrame();
-        return jso_ensureTokens({ cg: auth.scope }, true);
+        return jso_ensureTokens({ [auth.provider]: auth.scope }, true);
       }
 
       if (href && href.indexOf("access_token") !== -1) {
         clearInterval(listener);
-        jso_checkfortoken(auth.client_id, href, true);
-        const token = jso_getToken("cg");
+        jso_checkfortoken(auth.client_id, auth.provider, href, true);
+        const token = jso_getToken(auth.provider);
         removeIFrame();
         resolve(token);
       }
@@ -148,10 +148,10 @@ function logInWithRedirect(reset) {
   });
 }
 
-export default (token, reset) => {
+export default (token, reset, config) => {
   if (isNode) {
     return logInWithToken(token).catch(e => new Error(e));
   }
 
-  return logInWithRedirect(reset);
+  return logInWithRedirect(reset, config);
 };

@@ -119,14 +119,14 @@ api_storage = new ApiDefaultStorage();
  * childbrowser when the jso context is not receiving the response,
  * instead the response is received on a child browser.
  */
-export const jso_checkfortoken = (providerID, url, disableRedirect) => {
+export const jso_checkfortoken = (clientId, provider, url, disableRedirect) => {
   let atoken,
     h = window.location.hash,
     now = epoch(),
     state,
     co;
 
-  log(`jso_checkfortoken(${providerID})`);
+  log(`jso_checkfortoken(${clientId})`);
 
   // If a url is provided
   if (url) {
@@ -145,14 +145,14 @@ export const jso_checkfortoken = (providerID, url, disableRedirect) => {
   atoken = parseQueryString(h);
 
   if (atoken.state) {
-    state = api_storage.getState(atoken.state);
+    state = api_storage.getState(atoken.state, provider);
   } else {
-    if (!providerID) {
+    if (!clientId) {
       throw new Error(
         "Could not get [state] and no default providerid is provided."
       );
     }
-    state = { providerID: providerID };
+    state = { providerID: clientId };
   }
 
   if (!state) throw new Error("Could not retrieve state");
@@ -269,7 +269,7 @@ export const jso_getAuthUrl = (providerid, scopes, callback) => {
   log(`Saving state [${state}]`);
   log(JSON.parse(JSON.stringify(request)));
 
-  api_storage.saveState(state, request);
+  api_storage.saveState(state, providerid, request);
 
   return authurl;
 };
@@ -321,7 +321,7 @@ const jso_authrequest = (providerid, scopes, callback) => {
   log(`Saving state [${state}]`);
   log(JSON.parse(JSON.stringify(request)));
 
-  api_storage.saveState(state, request);
+  api_storage.saveState(state, providerid, request);
   api_redirect(authurl);
 };
 
@@ -371,7 +371,7 @@ export const jso_configure = (c, opts) => {
     let def = jso_findDefaultEntry(c);
 
     log("jso_configure() about to check for token for this entry", def);
-    jso_checkfortoken(def);
+    jso_checkfortoken(c[def].client_id, def);
   } catch (e) {
     log("Error when retrieving token from hash: " + e);
     window.location.hash = "";
