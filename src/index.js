@@ -254,6 +254,29 @@ export default class Client {
   }
 
   /**
+   * Get the integrations of project projectId
+   *
+   * @param string projectId
+   *
+   * @return Promise Integration[]
+   */
+  getIntegrations(projectId) {
+    return entities.Integration.query({ projectId });
+  }
+
+  /**
+   * Get the integration integrationId of the projectId project
+   *
+   * @param string projectId
+   * @param string integrationId
+   *
+   * @return Promise Integration
+   */
+  getIntegration(projectId, integrationId) {
+    return entities.Integration.get({ projectId, id: intgerationId });
+  }
+
+  /**
    * Get the logged-in user's SSH keys.
    *
    * @param bool reset
@@ -590,7 +613,7 @@ export default class Client {
    * @return Promise
    */
   getUserProfile(id) {
-    return entities.Profile.get({ id });
+    return entities.AccountsProfile.get({ id });
   }
 
   /**
@@ -629,7 +652,7 @@ export default class Client {
       data
     );
 
-    return new entities.Profile(updatedProfile);
+    return new entities.AccountsProfile(updatedProfile);
   }
 
   /**
@@ -804,5 +827,52 @@ export default class Client {
 
   async sendComment(comment) {
     return entities.Comment.send(comment);
+  }
+
+  /**
+   * Get a user from Auth API.
+   *
+   * @param { string } id - UUID of the user.
+   * @return Promise
+   */
+  getUser(id) {
+    return entities.AuthUser.get({ id });
+  }
+
+  /**
+   * Get the UUID for a user based on their username
+   *
+   * @param {string} string - username of the user.
+   *
+   * @return string
+   */
+  async getUserIdFromUsername(username) {
+    const { api_url } = getConfig();
+
+    const user = await request(
+      `${api_url}/v1/profiles?filter[username]=${username}`
+    );
+
+    return new entities.AccountsProfile(user.profiles[0]);
+  }
+
+  /**
+   * Get the activities of the project projectId
+   *
+   * @param string projectId
+   * @param string types
+   * @param string starts_at
+   *
+   * @return Promise Activity[]
+   */
+  getProjectActivities(projectId, types, starts_at) {
+    const params = { type: types, starts_at, projectId };
+
+    const { api_url } = getConfig();
+
+    return entities.Activity.query(
+      params,
+      `${api_url}/projects/:projectId/activities`
+    );
   }
 }

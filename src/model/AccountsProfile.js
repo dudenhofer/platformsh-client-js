@@ -1,5 +1,7 @@
 import Ressource from "./Ressource";
 import { getConfig } from "../config";
+import request from "../api";
+import _urlParser from "../urlParser";
 
 const url = "/platform/profiles/:id";
 const paramDefaults = {};
@@ -21,7 +23,6 @@ const createableField = [
 ];
 const modifiableField = [
   "display_name",
-  "email",
   "username",
   "picture",
   "company_type",
@@ -35,7 +36,7 @@ const modifiableField = [
   "marketing"
 ];
 
-export default class Profile extends Ressource {
+export default class AccountsProfile extends Ressource {
   constructor(profile) {
     const { api_url } = getConfig();
     const { id } = profile;
@@ -77,7 +78,21 @@ export default class Profile extends Ressource {
     );
   }
 
-  update(data) {
-    return super.update(data, this.getLink("self"));
+  static async update(id, data) {
+    const { api_url } = getConfig();
+    const endpoint = `${api_url}${_urlParser(url, { id })}`;
+
+    const updatedProfile = await request(endpoint, "PATCH", data);
+    return new AccountsProfile(updatedProfile);
+  }
+
+  static async getUserIdFromUsername(username) {
+    const { api_url } = getConfig();
+
+    const user = await request(
+      `${api_url}/v1/profiles?filter[username]=${username}`
+    );
+
+    return new AccountsProfile(user.profiles[0]);
   }
 }

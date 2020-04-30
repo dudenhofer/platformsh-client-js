@@ -22,9 +22,11 @@ import TicketPriority from "./TicketPriority";
 import Region from "./Region";
 import Order from "./Order";
 import Me from "./Me";
-import Profile from "./Profile";
+import AccountsProfile from "./AccountsProfile";
 import SetupRegistry from "./SetupRegistry";
 import SetupConfig from "./SetupConfig";
+import AuthUser from "./AuthUser";
+import Integration from "./Integration";
 
 export default {
   Account,
@@ -49,9 +51,11 @@ export default {
   Region,
   Order,
   Me,
-  Profile,
+  AccountsProfile,
   SetupRegistry,
   SetupConfig,
   Ticket,
-  TicketPriority
+  TicketPriority,
+  AuthUser,
+  Integration
 };
