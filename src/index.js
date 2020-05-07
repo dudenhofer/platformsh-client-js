@@ -733,7 +733,7 @@ export default class Client {
    * Get a list of Zendesk tickets based on the settings.
    *
    * @param {object} settings - Filters and settings.
-   * @return Promise
+   * @return Promise<Ticket[]>
    */
   async getTickets(settings) {
     return entities.Ticket.query(settings).then(tickets => {
@@ -741,6 +741,14 @@ export default class Client {
     });
   }
 
+  /**
+   * Update the status of a ticket.
+   *
+   * @param {string|number} ticketId Ticket to be updated
+   * @param {string} status New status to be applied
+   *
+   * @return Promise<Ticket>
+   */
   updateTicketStatus(ticketId, status) {
     return entities.Ticket.patch(ticketId, { status }).then(ticket => ticket);
   }
@@ -749,13 +757,21 @@ export default class Client {
    * Get a list of available priorities for the subscription ID.
    *
    * @param {string|number} subscription_id
-   * @return Promise
+   *
+   * @return Promise<Priority[]>
    */
   async getTicketPriorities(subscription_id) {
     const priorities = await entities.TicketPriority.get({ subscription_id });
     return priorities.map(priority => new entities.TicketPriority(priority));
   }
 
+  /**
+   * Get the ticket attachments.
+   *
+   * @param {number|string} ticketId
+   *
+   * @return Promise<Attachment[]>
+   */
   async getTicketAttachments(ticketId) {
     const response = await entities.Ticket.getAttachments(ticketId);
     const attachments = response.data.attachments;
@@ -766,6 +782,13 @@ export default class Client {
     }));
   }
 
+  /**
+   * Get all the attachments related to a ticket, even the ones included in the comments
+   *
+   * @param {number|string} ticketId
+   *
+   * @return Promise<Attachment[]>
+   */
   async getAllTicketAttachments(ticketId) {
     const response = await entities.Ticket.getAllAttachments(ticketId);
     return response.map(attachment => ({
@@ -779,7 +802,8 @@ export default class Client {
    * Open a Zendesk ticket
    *
    * @param {object} ticket
-   * @return Promise
+   *
+   * @return Promise<Ticket>
    */
   async openTicket(ticket) {
     const response = await entities.Ticket.open(ticket);
@@ -787,10 +811,10 @@ export default class Client {
   }
 
   /**
-   * Load comments for a ticket
+   * Load comments for a ticket, excluding the initial comment.
    *
    * @param {string} ticketId
-   * @return Promise
+   * @return Promise<Comment[]>
    */
   async loadComments(ticketId, params) {
     const { data } = await entities.Comment.query(ticketId, params);
@@ -825,6 +849,13 @@ export default class Client {
     };
   }
 
+  /**
+   * Send a new comment.
+   *
+   * @param {Object} comment
+   *
+   * @return Promise<Comment>
+   */
   async sendComment(comment) {
     return entities.Comment.send(comment);
   }
